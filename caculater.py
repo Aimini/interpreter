@@ -6,9 +6,14 @@ university: NCU
 
 - 2017-8-27 21:19:23
 + 简单的个位数加法实现
+
+- 2017-8-29 16:55:52
++ 整数加法和减法实现
 '''
 
-INTEGER, OP, EOF = 'INTEGER', 'OP', 'EOF'
+INTEGER = 'INTEGER'
+OPERATOR = 'OPERATOR'
+EOF = 'EOF'
 
 
 class Token(object):
@@ -42,52 +47,53 @@ class Interpreter(object):
         self.text = text
         self.pos = 0
         self.current_token = None
+        self.current_char = self.text[self.pos]
 
     def error(self):
         raise Exception('Error parsing input')
 
+    def advance(self):
+        '''Advance the 'pos' and set current char'''
+        self.pos += 1
+        if self.pos < len(self.text):
+            self.current_char = self.text[self.pos]
+        else:
+            self.current_char = None
+
+    def skip_whitespace(self):
+        while self.current_char is not None and self.current_char.isspace():
+            self.advance()
+
+    def integer(self):
+        '''return a (multidigit) integer consumed from the input'''
+        num_str = ''
+        while self.current_char is not None and self.current_char.isdigit():
+            num_str += self.current_char
+            self.advance()
+        return int(num_str)
+        
     def get_next_token(self):
         '''Lexical analyzer (also know as scanner or tokenizer)
-
+        词法分析器（也叫做 扫描程序 或 分词器）
         This method is responsible for breaking a sentence
         apart into tokens. One token at a time.
+        该方法负责将句子分割成标记。一次分割出一个
         '''
-
-        text = self.text
-        if self.pos > len(text) - 1:
+        if self.current_char is None:
             return Token(EOF, None)
 
+        if self.current_char.isspace():
+            self.skip_whitespace()
 
-        current_char = text[self.pos]
-        while current_char == ' ' and self.pos < len(text):
-            current_char = text[self.pos]
-            if self.pos < len(text):
-                current_char = text[self.pos]
-            else:
-                break
-           
-
-        #如果当前字符串是数字
-        number_str = ''
-        while current_char.isdigit():
-            number_str += current_char
-            self.pos += 1
-            if self.pos < len(text):
-                current_char = text[self.pos]
-            else:
-                break         
-        if number_str is not '':
-            token = Token(INTEGER, int(number_str))
-            return token
-
-        #如果当前字符串是加号
-        if current_char in ['+','-'] :
-            token = Token(OP, current_char)
-            self.pos += 1
-            return token
-
+        if self.current_char.isdigit():
+            return Token(INTEGER,self.integer())
+        
+        if self.current_char in ['+','-','*','/','**']:
+            temp_token = Token(OPERATOR, self.current_char)
+            self.advance()
+            return temp_token
         self.error()
-
+        
 
     def eat(self, token_type):
         # 将当前的token的type(self.current_token.type)与传进来的
@@ -100,17 +106,15 @@ class Interpreter(object):
 
     def expr(self):
         '''expr -> INTEGER PLUS INTEGER'''
-        # set current token to the first token taken from the input
-        self.current_token = self.get_next_token()
-
         # we expect the current token to be a single-digit integer
+        self.current_token = self.get_next_token()
         left = self.current_token
         self.eat(INTEGER)
 
         # we expect the current token to be a '+' token
         op = self.current_token
-        self.eat(OP)
-
+        if op.type == OPERATOR:
+             self.eat(OPERATOR)
         # we expect the current token to be a single-digit integer
         right = self.current_token
         self.eat(INTEGER)
@@ -122,25 +126,32 @@ class Interpreter(object):
         # return the result of adding two integers, thus
         # effectively interpreting client input
         result = None
-        if op.value == '+':
-            result = left.value + right.value
-        if op.value == '-':
-            result = left.value - right.value
+        if op.type == OPERATOR:
+            if op.value == '+':
+                result = left.value + right.value
+            elif op.value == '-':
+                result = left.value - right.value
+            elif op.value == '*':
+                result = left.value * right.value
+            elif op.value == '/':
+                result = left.value / right.value
+            elif op.value == '**':
+                result = left.value ** right.value
         return result
- 
+
 def main():
-        while True:
-            try:
-                # To run under Python3 replace 'raw_input' call
-                # with 'input'
-                text = input('calc> ')
-            except EOFError:
-                break
-            if not text:
-                continue
-            interpreter = Interpreter(text)
-            result = interpreter.expr()
-            print(result)
- 
+    while True:
+        try:
+            # To run under Python3 replace 'raw_input' call
+            # with 'input'
+            text = input('calc> ')
+        except EOFError:
+            break
+        if not text:
+            continue
+        interpreter = Interpreter(text)
+        result = interpreter.expr()
+        print(result)
+
 if __name__ == '__main__':
     main()
