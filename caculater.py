@@ -9,6 +9,9 @@ university: NCU
 
 - 2017-8-29 16:55:52
 + 整数加法和减法实现
+
+- 2017-8-30 02:52:51
++ 整数乘法和除法实现，可以过滤空格
 '''
 
 INTEGER = 'INTEGER'
@@ -88,7 +91,7 @@ class Interpreter(object):
         if self.current_char.isdigit():
             return Token(INTEGER,self.integer())
         
-        if self.current_char in ['+','-','*','/','**']:
+        if self.current_char in ['+','-','*','/','^']:
             temp_token = Token(OPERATOR, self.current_char)
             self.advance()
             return temp_token
@@ -108,36 +111,30 @@ class Interpreter(object):
         '''expr -> INTEGER PLUS INTEGER'''
         # we expect the current token to be a single-digit integer
         self.current_token = self.get_next_token()
-        left = self.current_token
+        left_value = self.current_token.value
         self.eat(INTEGER)
+        while self.current_token.type is not EOF:
+            op = self.current_token
+            if op.type == OPERATOR:
+                self.eat(OPERATOR)
+            # we expect the current token to be a single-digit integer
+            right = self.current_token
+            self.eat(INTEGER)
 
-        # we expect the current token to be a '+' token
-        op = self.current_token
-        if op.type == OPERATOR:
-             self.eat(OPERATOR)
-        # we expect the current token to be a single-digit integer
-        right = self.current_token
-        self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
-
-        # at this point INTEGER PLUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding two integers, thus
-        # effectively interpreting client input
-        result = None
-        if op.type == OPERATOR:
-            if op.value == '+':
-                result = left.value + right.value
-            elif op.value == '-':
-                result = left.value - right.value
-            elif op.value == '*':
-                result = left.value * right.value
-            elif op.value == '/':
-                result = left.value / right.value
-            elif op.value == '**':
-                result = left.value ** right.value
-        return result
+            left = None
+            if op.type == OPERATOR:
+                if op.value == '+':
+                    left_value += right.value
+                elif op.value == '-':
+                    left_value -= right.value
+                elif op.value == '*':
+                    left_value *= right.value
+                elif op.value == '/':
+                   left_value /= right.value
+                elif op.value == '^':
+                    result = left.value ** right.value
+        
+        return left_value
 
 def main():
     while True:
