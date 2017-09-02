@@ -38,7 +38,7 @@ class Token(object):
                 TOKen(PLUS, '+')
         '''
         #repr() 将值转化为供解释器读取的形式的字符串
-        return ('Token({type}, {value}').format(type = self.type,value = repr(self.value))
+        return ('Token({type}, {value})').format(type = self.type,value = repr(self.value))
 
     def __repr__(self):
         return self.__str__()
@@ -82,6 +82,7 @@ class Interpreter(object):
         apart into tokens. One token at a time.
         该方法负责将句子分割成标记。一次分割出一个
         '''
+        #lexeme是组token的字符序列，如加法token对应的lexeme就是‘+’
         if self.current_char is None:
             return Token(EOF, None)
 
@@ -106,35 +107,44 @@ class Interpreter(object):
             self.current_token = self.get_next_token()
         else:
             self.error()
+    def term(self):
+        '''
+         获取一个项
+         return an INTEGER token value
+        '''
+        token = self.current_token
+        self.eat(INTEGER)
+        return token.value
 
     def expr(self):
-        '''expr -> INTEGER PLUS INTEGER'''
+        '''
+            既做语法分析，又做解释过程
+            expr -> INTEGER PLUS INTEGER
+            语法分析(parsing)
+            识别 token 流中的短语的过程称之为 parsing(语法分析)
+        '''
         # we expect the current token to be a single-digit integer
         self.current_token = self.get_next_token()
-        left_value = self.current_token.value
+        result = self.term()
         self.eat(INTEGER)
         while self.current_token.type is not EOF:
             op = self.current_token
             if op.type == OPERATOR:
                 self.eat(OPERATOR)
-            # we expect the current token to be a single-digit integer
-            right = self.current_token
-            self.eat(INTEGER)
-
-            left = None
-            if op.type == OPERATOR:
+                # we expect the current token to be a single-digit integer
+                right = self.term()
                 if op.value == '+':
-                    left_value += right.value
+                    result += right.value
                 elif op.value == '-':
-                    left_value -= right.value
+                    result -= right.value
                 elif op.value == '*':
-                    left_value *= right.value
+                    result *= right.value
                 elif op.value == '/':
-                   left_value /= right.value
+                   result /= right.value
                 elif op.value == '^':
-                    result = left.value ** right.value
+                    result = right.value ** right.value
         
-        return left_value
+        return result
 
 def main():
     while True:
