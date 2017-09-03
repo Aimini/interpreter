@@ -126,7 +126,6 @@ class Interpreter(object):
         # we expect the current token to be a single-digit integer
         self.current_token = self.get_next_token()
         result = self.term()
-        self.eat(INTEGER)
         while self.current_token.type is not EOF:
             op = self.current_token
             if op.type == OPERATOR:
@@ -134,15 +133,15 @@ class Interpreter(object):
                 # we expect the current token to be a single-digit integer
                 right = self.term()
                 if op.value == '+':
-                    result += right.value
+                    result += right
                 elif op.value == '-':
-                    result -= right.value
+                    result -= right
                 elif op.value == '*':
-                    result *= right.value
+                    result *= right
                 elif op.value == '/':
-                   result /= right.value
+                   result /= right
                 elif op.value == '^':
-                    result = right.value ** right.value
+                    result = result ** right
         
         return result
 
