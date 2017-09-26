@@ -18,101 +18,14 @@ university: NCU
 
 - 2017-09-24 22:30:21
 + 添加括号支持
+
+- 2017-09-26 10:21:33
++ 小数支持
++ 简单内置常量支持
++ 分割文件
 '''
+from lexer import *
 
-INTEGER = 'INTEGER'
-OPERATOR = 'OPERATOR'
-EOF = 'EOF'
-LPAREN = '('
-RPAREN = '('
-
-class Token(object):
-    '''标记 类
-
-        标记是组成表达式的基本单元
-        一个标记可以是数字，也可以是操作符（从广泛的范围来讲，操作符属于函数的一个子集）
-    '''
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
-
-    def __str__(self):
-        '''String representation of the class instance.abs
-            "类的实例的字符串表示"
-
-            Examples:
-                Token(INTEGER, 3)
-                TOKen(PLUS, '+')
-        '''
-        #repr() 将值转化为供解释器读取的形式的字符串
-        return ('Token({type}, {value})').format(type = self.type,value = repr(self.value))
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class Lexer(object):
-    '''解释器 类
-    '''
-    def __init__(self,text):
-        self.text = text
-        self.pos = 0
-        self.current_char = self.text[self.pos]
-        
-
-    def error(self):
-        raise Exception('Error parsing input')
-
-    def advance(self):
-        '''Advance the 'pos' and set current char'''
-        self.pos += 1
-        if self.pos < len(self.text):
-            self.current_char = self.text[self.pos]
-        else:
-            self.current_char = None
-
-    def skip_whitespace(self):
-        while self.current_char is not None and self.current_char.isspace():
-            self.advance()
-
-    def integer(self):
-        '''return a (multidigit) integer consumed from the input'''
-        num_str = ''
-        while self.current_char is not None and self.current_char.isdigit():
-            num_str += self.current_char
-            self.advance()
-        return int(num_str)
-        
-    def get_next_token(self):
-        '''Lexical analyzer (also know as scanner or tokenizer)
-        词法分析器（也叫做 扫描程序 或 分词器）
-        This method is responsible for breaking a sentence
-        apart into tokens. One token at a time.
-        该方法负责将句子分割成标记。一次分割出一个
-        '''
-        #lexeme是组token的字符序列，如加法token对应的lexeme就是‘+’
-        if self.current_char is None:
-            return Token(EOF, None)
-        self.skip_whitespace()#skip wihte space
-
-        if self.current_char.isdigit():
-            return Token(INTEGER,self.integer())
-        
-        if self.current_char in ['+','-','*','/','^']:
-            temp_token = Token(OPERATOR, self.current_char)
-            self.advance()
-            return temp_token
-
-        if self.current_char == "(":
-            temp_token = Token(LPAREN,'(')
-            self.advance()
-            return temp_token
-
-        if self.current_char == ")":
-            temp_token = Token(RPAREN,')')
-            self.advance()
-            return temp_token
-        self.error()
         
 class Interpreter(object):
     def __init__(self, lexer):
@@ -151,6 +64,11 @@ class Interpreter(object):
         if token.type == INTEGER:
             self.eatInt()
             return token.value
+
+        if token.type == VAR:
+            self.current_token = self.lexer.get_next_token()
+            return var_table.get(token.value)
+
         if token.type == LPAREN:
             self.current_token = self.lexer.get_next_token()
             result = self.expr()
