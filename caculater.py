@@ -23,6 +23,9 @@ university: NCU
 + 小数支持
 + 简单内置常量支持
 + 分割文件
+
+- 2017-09-28 16:52:09
++ 函数调用的支持 （少于两位参数）
 '''
 from lexer import *
 
@@ -30,19 +33,31 @@ from lexer import *
 class Interpreter(object):
     def __init__(self, lexer):
         self.lexer = lexer
-        self.current_token = lexer.get_next_token();
+        self.current_token = None
+        self.next_token()
+
     def error(self):
         raise Exception('Invalid syntax')
+
+    def next_token(self):
+        self.current_token = self.lexer.get_next_token()
+        return self.current_token
 
     def eatInt(self):
         # 将当前的token的type(self.current_token.type)与传进来的
         # type比较，如果两者相同，当前的token被使用掉(eat)并将下一个token
         # 赋值给current_token；否则抛出一个异常
         if self.current_token.type == INTEGER:
-            self.current_token = self.lexer.get_next_token()
+            self.next_token()
         else:
             self.error()
-    
+            
+    def eatVar(self):
+        if self.current_token.type == VAR:
+             self.next_token()
+        else:
+            self.error()
+
     def eatOp(self,level):
         '''
             cosume a opeartor from tokens stream
@@ -51,12 +66,32 @@ class Interpreter(object):
             if (level == 0 and self.current_token.value == '^')\
             or (level == 1 and self.current_token.value in ['*','/'])\
             or (level == 2 and self.current_token.value in ['+','-']):
-                self.current_token = self.lexer.get_next_token()
+                self.next_token()
             else:     
                 self.error()
         else:
             self.error()
 
+    def func(self,func_token):
+        func = var_table.get(func_token.value)
+        token = self.next_token()
+        if token.type is RPAREN:
+            self.next_token()
+            return func()
+        else:
+            par0 = self.expr()
+            token = self.current_token
+            if token.type is RPAREN:
+                self.next_token()
+                return func(par0)
+            elif token.type is COMMA:
+                token = self.next_token()
+                par1 = self.expr()
+                self.next_token()
+                return func(par0,par1)
+                
+            
+                
 
     def factor(self):
         '''factor : INTERGER'''
@@ -66,13 +101,15 @@ class Interpreter(object):
             return token.value
 
         if token.type == VAR:
-            self.current_token = self.lexer.get_next_token()
+            self.eatVar()
+            if self.current_token.type == LPAREN:
+                return self.func(token)
             return var_table.get(token.value)
 
         if token.type == LPAREN:
-            self.current_token = self.lexer.get_next_token()
+            self.next_token()
             result = self.expr()
-            self.current_token = self.lexer.get_next_token()
+            self.next_token()
             return result
 
     def pwrs(self):

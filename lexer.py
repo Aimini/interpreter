@@ -89,9 +89,13 @@ class Lexer(object):
             temp_token = Token(RPAREN,')')
             self.advance()
             return temp_token
+
+        if self.current_char == ",":
+            temp_token = Token(COMMA,',')
+            self.advance()
+            return temp_token
+        
         self.error("unrecognizable marks")
-
-
 if __name__  =='__main__' :
     l = Lexer("2.3 + 8")
     print(l.get_next_token())

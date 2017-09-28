@@ -2,15 +2,27 @@
 # time:2017-09-25 18:52:20
 # author:AI
 # note: token class.
+#
+# time:2017-09-28 16:51:34
+# + 数学常量和三角函数以及一个自定义函数
 #################################
+
+import math
+import decimal
+
 INTEGER = 'INTEGER'
 OPERATOR = 'OPERATOR'
 EOF = 'EOF'
 LPAREN = '('
 RPAREN = ')'
 VAR = 'VAR'
+COMMA = 'COMMA'
+def info():
+    print("create by AI, 2017-09-28 16:25:35,NCU.")
 
-var_table = {'a' : 0, 'b' : 1 ,'c': 3,'PI':3.141592654}
+var_table = {'sin' : math.sin, 'cos' : math.cos ,'info': info,'PI':math.pi,"E":math.e,'pow':math.pow}
+
+
 
 
 class Token(object):
@@ -39,3 +51,5 @@ class Token(object):
 
 if __name__  =='__main__' :
     print(Token(INTEGER,23))
+    print(Token(VAR,'PI'))
+    print(Token(VAR,info))
