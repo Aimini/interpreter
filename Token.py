@@ -20,7 +20,7 @@ COMMA = 'COMMA'
 def info():
     print("create by AI, 2017-09-28 16:25:35,NCU.")
 
-var_table = {'sin' : math.sin, 'cos' : math.cos ,'info': info,'PI':math.pi,"E":math.e,'pow':math.pow}
+var_table = {'sin' : math.sin, 'cos' : math.cos ,'info': info,'PI':math.pi,"E":math.e,'pow':math.pow,}
 
 
 

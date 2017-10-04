@@ -26,6 +26,9 @@ university: NCU
 
 - 2017-09-28 16:52:09
 + 函数调用的支持 （少于两位参数）
+
+- 2017-10-03 14:40:40
++ 任意长度参数函数调用
 '''
 from lexer import *
 
@@ -72,24 +75,24 @@ class Interpreter(object):
         else:
             self.error()
 
-    def func(self,func_token):
-        func = var_table.get(func_token.value)
+    def func(self,func_var):
+        func = func_var
         token = self.next_token()
         if token.type is RPAREN:
-            self.next_token()
             return func()
-        else:
-            par0 = self.expr()
+
+        parlist = list()
+        while True:
+            parlist.append(self.expr())   
             token = self.current_token
-            if token.type is RPAREN:
-                self.next_token()
-                return func(par0)
-            elif token.type is COMMA:
+            
+            if token.type is COMMA:
                 token = self.next_token()
-                par1 = self.expr()
+            elif token.type is RPAREN:
                 self.next_token()
-                return func(par0,par1)
+                return func(*parlist)
                 
+                   
             
                 
 
@@ -102,9 +105,10 @@ class Interpreter(object):
 
         if token.type == VAR:
             self.eatVar()
+            var = var_table.get(token.value)
             if self.current_token.type == LPAREN:
-                return self.func(token)
-            return var_table.get(token.value)
+                return self.func(var)
+            return 
 
         if token.type == LPAREN:
             self.next_token()
