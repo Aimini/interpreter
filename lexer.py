@@ -35,7 +35,11 @@ class Lexer(object):
 
     def var(self):
         var_name = ''
-        while self.current_char is not None and(self.current_char.isalpha() or self.current_char in [ '_' , '$']):
+        if self.current_char is not None and(self.current_char.isalpha() or self.current_char in [ '_' , '$']):
+            var_name += self.current_char
+            self.advance()
+
+        while self.current_char is not None and(self.current_char.isalnum() or self.current_char in [ '_' , '$']):
             var_name += self.current_char
             self.advance()
         return var_name

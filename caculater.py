@@ -29,6 +29,10 @@ university: NCU
 
 - 2017-10-03 14:40:40
 + 任意长度参数函数调用
+
+- 2017-10-08 17:57:09
++ 解决不能使用变量的bug
++ 标准（可能）变量名的支持
 '''
 from lexer import *
 
@@ -108,7 +112,7 @@ class Interpreter(object):
             var = var_table.get(token.value)
             if self.current_token.type == LPAREN:
                 return self.func(var)
-            return 
+            return  var
 
         if token.type == LPAREN:
             self.next_token()
