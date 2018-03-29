@@ -50,6 +50,12 @@ class Interpreter(object):
         self.current_token = self.lexer.get_next_token()
         return self.current_token
 
+    def prev_token(self):
+        self.current_token = self.lexer.get_prev_token()
+        return self.current_token
+
+
+
     def eatInt(self):
         # 将当前的token的type(self.current_token.type)与传进来的
         # type比较，如果两者相同，当前的token被使用掉(eat)并将下一个token
@@ -152,9 +158,10 @@ class Interpreter(object):
             expr -> INTEGER PLUS INTEGER
             语法分析(parsing)
             识别 token 流中的短语的过程称之为 parsing(语法分析)
-             expr   : term ((PLUS | MINUS) term)*
-            term   : factor ((MUL | DIV) factor)*
-            factor : INTEGER
+            expr    :   term ((PLUS | MINUS) term)*
+            term    :   pwrs((MUL | DIV) pwrs)*
+            pwrs    :   factor((PWR) factor)*
+            factor  :   INTEGER | func | expr
         '''
         # we expect the current token to be a single-digit integer
         result = self.term()
@@ -170,6 +177,24 @@ class Interpreter(object):
                 result -= right
         return result
 
+    def sentence(self):
+        token = self.current_token
+        var_name = None
+        if token.type is VAR:
+            var_name = token.value
+            token = self.next_token()
+            if token.type is OPERATOR and token.value == '=':
+                self.next_token()
+            else:
+                var_name = None
+                self.prev_token()
+        result = self.expr() 
+        var_table['_'] = result
+        if var_name is not None:
+            var_table[var_name] = result
+        return result
+            
+
 def main():
     while True:
         try:
@@ -180,9 +205,15 @@ def main():
             break
         if not text:
             continue
+
+        if text in ['quit()','exit()']:
+            text = input('are you want to quit(y/n)?> ')
+            if text.upper() == "Y":
+                break
+
         lexer = Lexer(text)
         interpreter = Interpreter(lexer)
-        result = interpreter.expr()
+        result = interpreter.sentence()
         print(result)
 
 if __name__ == '__main__':
